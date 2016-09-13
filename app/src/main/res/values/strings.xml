@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="turn_on">Turn On</string>
+    <string name="turn_off">Turn Off</string>
+    <string name="title_1">Outlet 1</string>
+    <string name="title_2">Outlet 2</string>
+</resources>
