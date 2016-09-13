@@ -46,9 +46,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ProgressDialog waiting;
 
-    // main queue to execute post requests
-    private RequestQueue[] requestQueues = new RequestQueue[1];
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,9 +54,9 @@ public class MainActivity extends AppCompatActivity {
         waiting = new ProgressDialog(this);
         waiting.setCancelable(false);
 
-        // main queue to execute post requests
+        // main queue to execute post requests.
+        // made variable final for inner classes to access
         final RequestQueue queue = Volley.newRequestQueue(this);
-        requestQueues[0] = queue;
 
         getStatusRequest = new StringRequest(Request.Method.POST,url,
                 new ResponseHandler(),new ErrorHandler()) {
@@ -279,53 +276,8 @@ public class MainActivity extends AppCompatActivity {
                 waiting.dismiss();
                 Log.d(TAG,"Request successful. Response received");
             }
-            else if (response.contains("busy")) {
-                Log.d(TAG,response);
-                final String[] busyInfo = response.split(" ");
-                Runnable tmpRun;
-                Log.d(TAG,busyInfo.toString());
-                if (busyInfo[1].equals("stat")) {
-                    tmpRun = new Runnable() {
-                        @Override
-                        public void run() {
-                            requestQueues[0].add(getStatusRequest);
-                        }
-                    };
-                    handler.postDelayed(tmpRun,500);
-                    //requestQueues[0].add(getStatusRequest);
-                }
-                else if (busyInfo[1].equals("on")) {
-                    tmpRun = new Runnable() {
-                        @Override
-                        public void run() {
-                            if (busyInfo[2].equals("0")) {
-                                requestQueues[0].add(createRequest(0));
-                            }
-                            else if (busyInfo[2].equals("1")) {
-                                requestQueues[0].add(createRequest(2));
-                            }
-                        }
-                    };
-                    handler.postDelayed(tmpRun,500);
-                }
-                else {
-                    tmpRun = new Runnable() {
-                        @Override
-                        public void run() {
-                            if (busyInfo[2].equals("0")) {
-                                requestQueues[0].add(createRequest(1));
-                            }
-                            else if (busyInfo[2].equals("1")) {
-                                requestQueues[0].add(createRequest(3));
-                            }
-                        }
-                    };
-                    handler.postDelayed(tmpRun,500);
-                }
-                stopStatReq();
-                startStatReq(RESET_INITIAL);
-                Log.d(TAG,"server busy");
-            }
+            stopStatReq();
+            startStatReq(RESET_INITIAL);
         }
     }
 }
