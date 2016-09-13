@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     // ints for request timeout and time interval between status requests
     private final static int REQUEST_TIMEOUT = 5000;
     private final static int SERVICE_INTERVAL = 3000;
-    private final static int RESET_INITIAL = 1000;
+    private final static int RESET_INITIAL = 500;
 
     // post requests to be executed by volley request queue
     private StringRequest getStatusRequest;
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         final RequestQueue queue = Volley.newRequestQueue(this);
 
         getStatusRequest = new StringRequest(Request.Method.POST,url,
-                new ResponseHandler(),new ErrorHandler()) {
+                new statusResponseHandler(),new ErrorHandler()) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> data = new HashMap<>();
@@ -97,12 +97,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG,"Sending turn-on request...");
                 // reset handler to allow returned "turned on" message to be seen
                 // for a reasonable amount of time
-                onBut_1.setEnabled(false);
-                offBut_1.setEnabled(false);
-                onBut_2.setEnabled(false);
-                offBut_2.setEnabled(false);
+                disableAllButtons();
                 stopStatReq();
-                startStatReq(RESET_INITIAL);
                 waiting.setTitle("Turning on");
                 waiting.show();
             }
@@ -117,12 +113,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG,"Sending turn-on request...");
                 // reset handler to allow returned "turned on" message to be seen
                 // for a reasonable amount of time
-                onBut_1.setEnabled(false);
-                offBut_1.setEnabled(false);
-                onBut_2.setEnabled(false);
-                offBut_2.setEnabled(false);
+                disableAllButtons();
                 stopStatReq();
-                startStatReq(RESET_INITIAL);
                 waiting.setTitle("Turning on");
                 waiting.setMessage("Please wait...");
                 waiting.show();
@@ -138,12 +130,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG,"Sending turn-off request...");
                 // reset handler to allow returned "turned on" message to be seen
                 // for a reasonable amount of time
-                onBut_1.setEnabled(false);
-                offBut_1.setEnabled(false);
-                onBut_2.setEnabled(false);
-                offBut_2.setEnabled(false);
+                disableAllButtons();
                 stopStatReq();
-                startStatReq(RESET_INITIAL);
                 waiting.setTitle("Turning off");
                 waiting.setMessage("Please wait...");
                 waiting.show();
@@ -159,12 +147,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG,"Sending turn-off request...");
                 // reset handler to allow returned "turned on" message to be seen
                 // for a reasonable amount of time
-                onBut_1.setEnabled(false);
-                offBut_1.setEnabled(false);
-                onBut_2.setEnabled(false);
-                offBut_2.setEnabled(false);
+                disableAllButtons();
                 stopStatReq();
-                startStatReq(RESET_INITIAL);
                 waiting.setTitle("Turning off");
                 waiting.setMessage("Please wait...");
                 waiting.show();
@@ -177,26 +161,13 @@ public class MainActivity extends AppCompatActivity {
 
     private StringRequest createRequest(final int opCode) {
         StringRequest request = new StringRequest(Request.Method.POST,url,
-                new ResponseHandler(),new ErrorHandler()) {
+                new onOffResponseHandler(),new ErrorHandler()) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> data = new HashMap<>();
                 // add operation code for turning on device
                 // add password for operation
-                switch (opCode) {
-                    case 0:
-                        data.put("op", "0");
-                        break;
-                    case 1:
-                        data.put("op", "1");
-                        break;
-                    case 2:
-                        data.put("op", "2");
-                        break;
-                    case 3:
-                        data.put("op", "3");
-                        break;
-                }
+                data.put("op", String.valueOf(opCode));
                 data.put("pass", pass);
                 return data;
             }
@@ -234,6 +205,13 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG,"Starting status service");
     }
 
+    private void disableAllButtons() {
+        onBut_1.setEnabled(false);
+        offBut_1.setEnabled(false);
+        onBut_2.setEnabled(false);
+        offBut_2.setEnabled(false);
+    }
+
     // class to handle errors encountered when volley is executing request
     class ErrorHandler implements Response.ErrorListener {
 
@@ -241,16 +219,13 @@ public class MainActivity extends AppCompatActivity {
         public void onErrorResponse(VolleyError error) {
             // print error stacktrace and notify user error has occurred
             error.printStackTrace();
-            onBut_1.setEnabled(false);
-            onBut_2.setEnabled(false);
-            offBut_1.setEnabled(false);
-            offBut_2.setEnabled(false);
-            Log.d(TAG,"Error encountered while processing request");
+            disableAllButtons();
+            Log.d(TAG,"Error encountered while sending request");
         }
     }
 
     // class to handle server response to the sent request
-    class ResponseHandler implements Response.Listener<String> {
+    class statusResponseHandler implements Response.Listener<String> {
 
         @Override
         public void onResponse(String response) {
@@ -276,7 +251,12 @@ public class MainActivity extends AppCompatActivity {
                 waiting.dismiss();
                 Log.d(TAG,"Request successful. Response received");
             }
-            stopStatReq();
+        }
+    }
+
+    class onOffResponseHandler implements Response.Listener<String> {
+        @Override
+        public void onResponse(String response) {
             startStatReq(RESET_INITIAL);
         }
     }
