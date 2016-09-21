@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private Runnable r;
 
     // strings for url, development pass, and logging tag
-    private final static String url = "http://192.168.1.27:1821/";
+    private final static String url = "http://192.168.29.139:1821/";
     private final static String pass = "12345";
     private final static String TAG = "APP_STATUS";
 
@@ -156,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // begin the initial status request when app is being started
+        disableAllButtons();
         queue.add(getStatusRequest);
     }
 
